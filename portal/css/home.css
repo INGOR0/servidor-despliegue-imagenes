@@ -1,0 +1,77 @@
+* {
+    box-sizing: border-box;
+    margin: 0px;
+}
+
+body {
+    background-color: #EAEAEA;
+    font-family: "Krona One", sans-serif;
+}
+
+header {
+    background-color: white;
+    height: 150px;
+    padding-left: 20px;
+    width: 100%;
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+header h1 {
+    background: linear-gradient(to right, #000000 20%, #A80030);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+header img {
+    height: 125px;
+    margin-left: auto;
+    padding-right: 20px;
+}
+
+#cards {
+      margin: 50px auto;
+      width: 70%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+.card {
+    text-align: left;
+    text-decoration: none;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: rgba(0, 0, 0, 0.2) 5px 5px 10px;
+    color: black;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: calc(50% - 10px);
+    transition: transform 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* move up */
+}
+
+.card img {
+    height: 70px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.card-text h3 {
+    margin-bottom: 5px;
+    font-size: 2em;
+}
+
+.card-text p {
+    font-size: 0.7em;
+    padding-left: 10px;
+    color: #555;
+}

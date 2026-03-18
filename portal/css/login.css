@@ -1,0 +1,86 @@
+* {
+    box-sizing: border-box;
+    margin: 0px;
+}
+
+body {
+    background-color: #EAEAEA;
+    font-family: "Krona One", sans-serif;
+}
+
+header {
+    background-color: white;
+    height: 150px;
+    padding-left: 20px;
+    width: 100%;
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+header h1 {
+    background: linear-gradient(to right, #000000 20%, #A80030);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+header img {
+    height: 125px;
+    margin-left: auto;
+    padding-right: 20px;
+}
+
+#form {
+    border-radius: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    width: 400px;
+    height: auto;
+    margin: 20px auto;
+    padding-bottom: 2em;
+    box-shadow: rgba(0, 0, 0, 0.2) 5px 5px 10px;
+
+}
+
+.field {
+    margin-top: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    width: 250px;
+    text-align: center;
+}
+
+#error {
+    color: #A80030;
+    font-size: 0.8em;
+    margin-top: 1em;
+    min-height: 1em;
+}
+
+button[type="submit"] {
+    margin-top: 1.5em;
+    width: 250px;
+    padding: 0.7em;
+    background: linear-gradient(to right, #000000, #A80030);
+    color: white;
+    border: none;
+    border-radius: 0.5em;
+    font-family: "Krona One", sans-serif;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.2) 5px 5px 10px;
+}
+
+button[type="submit"]:hover {
+    transform: scale(105%);
+    transition: transform 0.2s ease;
+}
+
+input {
+    font-family: "Krona One", sans-serif;
+}

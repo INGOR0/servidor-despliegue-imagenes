@@ -1,0 +1,13 @@
+[Unit]
+Description=Servicio de iVentoy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/start_iventoy.sh
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

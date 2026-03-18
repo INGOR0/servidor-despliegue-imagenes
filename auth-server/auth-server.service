@@ -1,0 +1,14 @@
+[Unit]
+Description=Servidor de autenticación del portal
+After=network.target mariadb.service
+Requires=mariadb.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/auth-server/index.js
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,253 @@
+#!/bin/bash
+
+###############################################
+## SCRIPT HECHO POR IVÁN GARRIDO ROMERO PARA ##
+## EL SERVIDOR DE DESPLIEGUE DE IMÁGENES DEL ##
+##    INSTITUTO IES RAMÓN DEL VALLE-INCLÁN   ##
+##    TODO CAMBIO AL SCRIPT ESTÁ PERMITIDO   ##
+###############################################
+
+SCRIPT_DIR="$(dirname "$0")"
+
+# ------------- Instalar iVentoy ------------- #
+
+echo "Instalando iVentoy.."
+
+
+
+# Descargar y extraer
+
+cd /opt
+wget https://github.com/ventoy/PXE/releases/download/v1.0.21/iventoy-1.0.21-linux-free.tar.gz
+tar -xzf iventoy-1.0.21-linux-free.tar.gz
+mv iventoy-1.0.21 iventoy
+rm iventoy-1.0.21-linux-free.tar.gz
+
+
+
+# Script de arranque y servicio
+
+cp "$SCRIPT_DIR/iventoy-files/start_iventoy.sh" /usr/local/bin/start_iventoy.sh
+chmod +x /usr/local/bin/start_iventoy.sh
+cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.service
+
+systemctl daemon-reload
+systemctl enable iventoy
+systemctl restart iventoy
+
+echo "iVentoy instalado y corriendo con éxito."
+
+
+
+# ------------- Descargar Clonezilla ------------- #
+
+echo "Descargando Clonezilla..."
+
+CLONEZILLA_VERSION="3.3.1-35"
+CLONEZILLA_ISO="clonezilla-live-$CLONEZILLA_VERSION-amd64.iso"
+CLONEZILLA_URL="https://downloads.sourceforge.net/project/clonezilla/clonezilla_live_stable/$CLONEZILLA_VERSION/$CLONEZILLA_ISO"
+CLONEZILLA_SHA256="ac4f88c8795a917e3d3fc1a3e52d095f35fe531d459cf853cd3e2c7731043fec"
+
+cd /opt/iventoy/iso
+wget "$CLONEZILLA_URL" -O "$CLONEZILLA_ISO"
+
+echo "$CLONEZILLA_SHA256  $CLONEZILLA_ISO" | sha256sum -c --strict
+if [ $? -ne 0 ]; then
+    echo "ERROR: El hash de Clonezilla no coincide. Descarga corrupta o modificada. Abortando..."
+    exit 1
+fi
+
+echo "Clonezilla descargado y verificado con éxito."
+
+
+
+# ------------- Instalar Samba------------- #
+
+SAMBA_DIR="/srv/samba"
+SAMBA_SHARE_ISO="iso"
+SAMBA_SHARE_CLONEZILLA="clonezilla"
+SAMBA_SHARE_RECURSOS_COMPARTIDOS="Recursos_Compartidos"
+
+apt install samba -y
+
+mkdir -p "$SAMBA_DIR"
+ln -s "/opt/iventoy/iso" "$SAMBA_DIR/$SAMBA_SHARE_ISO"
+mkdir -p "$SAMBA_DIR/$SAMBA_SHARE_CLONEZILLA"
+mkdir -p "$SAMBA_DIR/$SAMBA_SHARE_RECURSOS_COMPARTIDOS"
+
+read -p "Usuario de Samba con permisos de escritura: " SAMBA_USER
+read -sp "Contraseña de dicho usuario: " SAMBA_PASS
+echo ""
+
+useradd -M -s /usr/sbin/nologin "$SAMBA_USER"
+echo -e "$SAMBA_PASS\n$SAMBA_PASS" | smbpasswd -a -s "$SAMBA_USER"
+
+useradd -M -s /usr/sbin/nologin anonimo
+echo -e "anonimo\nanonimo" | smbpasswd -a -s "anonimo"
+
+sed -e "s|__SAMBA_DIR__|$SAMBA_DIR|g" \
+    -e "s|__SAMBA_SHARE_ISO__|$SAMBA_SHARE_ISO|g" \
+    -e "s|__SAMBA_SHARE_CLONEZILLA__|$SAMBA_SHARE_CLONEZILLA|g" \
+    -e "s|__SAMBA_SHARE_RECURSOS_COMPARTIDOS__|$SAMBA_SHARE_RECURSOS_COMPARTIDOS|g" \
+    -e "s|__SAMBA_USER__|$SAMBA_USER|g" \
+    "$SCRIPT_DIR/samba-files/samba_shares.conf" > /etc/samba/samba_shares.conf
+
+echo "include = /etc/samba/samba_shares.conf" >> /etc/samba/smb.conf
+systemctl restart smbd
+
+
+
+# wsdd para descubrimiento en Windows
+
+apt install wsdd -y
+systemctl enable wsdd
+systemctl start wsdd
+
+
+
+# ------------- Preparar Clonezilla ------------- #
+
+read -p "IP del servidor (ej. 172.17.5.222): " SERVER_IP
+echo "Preparando ISO de Clonezilla..."
+
+
+
+# Montar la ISO y copiarla
+
+WORK_DIR="/tmp/clonezilla-copiada"
+
+cd /opt/iventoy/iso # Por si acaso
+mkdir -p "$WORK_DIR"
+mount -o loop "$CLONEZILLA_ISO" /mnt
+cp -r /mnt/. "$WORK_DIR"
+umount /mnt
+chmod -R u+w "$WORK_DIR"
+
+
+
+# Reemplazar placeholders en la plantilla y copiar a syslinux e isolinux
+
+sed -e "s/__SERVER_IP__/$SERVER_IP/g" \
+    -e "s/__SAMBA_USER__/$SAMBA_USER/g" \
+    -e "s/__SAMBA_PASS__/$SAMBA_PASS/g" \
+    "$SCRIPT_DIR/clonezilla-files/menu.cfg" > "$WORK_DIR/syslinux/syslinux.cfg"
+
+cp "$WORK_DIR/syslinux/syslinux.cfg" "$WORK_DIR/isolinux/isolinux.cfg"
+
+
+
+# Reconstruir ISO
+
+xorriso -as mkisofs \
+    -r -J -joliet-long \
+    -partition_offset 16 \
+    -A "Clonezilla" \
+    -b isolinux/isolinux.bin \
+    -c isolinux/boot.cat \
+    -no-emul-boot -boot-load-size 4 -boot-info-table \
+    -eltorito-alt-boot \
+    -e boot/grub/efi.img \
+    -no-emul-boot \
+    -isohybrid-gpt-basdat \
+    -o "$CLONEZILLA_ISO" \
+    "$WORK_DIR"
+
+rm -rf "$WORK_DIR"
+
+echo "ISO de Clonezilla preparada con éxito."
+
+
+
+# ------------- Instalar Webmin ------------- #
+
+curl -o webmin-setup-repo.sh https://raw.githubusercontent.com/webmin/webmin/master/webmin-setup-repo.sh
+echo "y" | sh webmin-setup-repo.sh
+apt-get install webmin --install-recommends -y
+
+
+
+# ------------- Instalar nginx ------------- #
+
+apt install nginx -y
+
+read -p "Dominio (ej. dployerz.com): " DOMAIN
+mkdir -p /etc/nginx/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/nginx.key \
+    -out /etc/nginx/ssl/nginx.crt \
+    -subj "/CN=*.$DOMAIN" \
+    -addext "subjectAltName=DNS:*.$DOMAIN,DNS:$DOMAIN"
+
+sed "s|__DOMAIN__|$DOMAIN|g" \
+    "$SCRIPT_DIR/nginx-files/portal.conf" > /etc/nginx/sites-available/portal.conf
+    
+
+cp -r "$SCRIPT_DIR/portal" /var/www/html
+ln -s /etc/nginx/sites-available/portal.conf /etc/nginx/sites-enabled
+
+systemctl enable nginx
+systemctl reload nginx
+
+# ------------- Instalar sistema de login ------------- #
+
+apt install nodejs mariadb-server -y
+
+read -p "Usuario de MariaDB para el portal: " DB_USER
+read -sp "Contraseña del usuario para el portal: " DB_PASS
+echo ""
+
+mysql -u root << EOF
+CREATE DATABASE portal;
+CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS';
+GRANT ALL PRIVILEGES ON portal.* TO '$DB_USER'@'localhost';
+FLUSH PRIVILEGES;
+USE portal;
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'user') DEFAULT 'user',
+    status ENUM('active', 'inactive') DEFAULT 'active'
+);
+EOF
+
+mkdir /opt/auth-server
+cp "$SCRIPT_DIR/auth-server/package.json" /opt/auth-server
+cd /opt/auth-server
+npm install
+
+read -sp "Contraseña para el usuario admin: " ADMIN_PASS
+echo ""
+
+ADMIN_HASH=$(node -e "const bcrypt = require('bcrypt'); bcrypt.hash('$ADMIN_PASS', 10).then(h => console.log(h))")
+
+mysql -u root << EOF
+USE portal;
+INSERT INTO users (username, password_hash, role, status) VALUES ('admin', '$ADMIN_HASH', 'admin', 'active');
+EOF
+
+SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+
+sed -e "s|__SESSION_SECRET__|$SESSION_SECRET|g" \
+    -e "s|__DB_USER__|$DB_USER|g" \
+    -e "s|__DB_PASS__|$DB_PASS|g" \
+    -e "s|__DOMAIN__|$DOMAIN|g" \
+    "$SCRIPT_DIR/auth-server/index.js" > /opt/auth-server/index.js
+
+cp "$SCRIPT_DIR/auth-server/auth-server.service" /etc/systemd/system/auth-server.service
+systemctl daemon-reload
+systemctl enable auth-server
+systemctl start auth-server
+
+
+# ------------- UFW SEGURIDAD ------------- #
+
+apt install ufw -y
+
+ufw allow 22
+ufw allow 80
+ufw allow 443
+ufw allow from 127.0.0.1 to any port 3000
+ufw deny 10000
+ufw deny 26000
+ufw enable
