@@ -159,7 +159,7 @@ xorriso -as mkisofs \
     -e boot/grub/efi.img \
     -no-emul-boot \
     -isohybrid-gpt-basdat \
-    -o "/opt/iventoy/clonezilla-custom.iso" \
+    -o "/opt/iventoy/iso/clonezilla-custom.iso" \
     "$WORK_DIR"
 
 rm -rf "$WORK_DIR"
