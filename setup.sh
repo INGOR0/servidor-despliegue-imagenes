@@ -24,11 +24,17 @@ echo "Instalando iVentoy.."
 
 # Descargar y extraer
 
+IVENTOY_VERSION="1.0.21"
+
 cd /opt
-wget https://github.com/ventoy/PXE/releases/download/v1.0.21/iventoy-1.0.21-linux-free.tar.gz
-tar -xzf iventoy-1.0.21-linux-free.tar.gz
-mv iventoy-1.0.21 iventoy
-rm iventoy-1.0.21-linux-free.tar.gz
+rm -rf iventoy
+wget https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
+
+tar -xzf iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
+
+mv iventoy-${IVENTOY_VERSION} iventoy
+
+rm iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
 
 
 
@@ -38,7 +44,8 @@ cp "$SCRIPT_DIR/iventoy-files/start_iventoy.sh" /usr/local/bin/start_iventoy.sh
 chmod +x /usr/local/bin/start_iventoy.sh
 cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.service
 
-bash /opt/iventoy/iventoy.sh start
+cd /opt/iventoy
+bash iventoy.sh start
 echo ""
 echo "Abre http://<IP>:26000 en tu navegador, activa el servidor PXE y pulsa ENTER para continuar..."
 read -p ""
@@ -243,7 +250,7 @@ echo ""
 
 ADMIN_HASH=$(ADMIN_PASS="$ADMIN_PASS" node -e "const bcrypt = require('bcrypt'); bcrypt.hash(process.env.ADMIN_PASS, 10).then(h => console.log(h))")
 
-mysql -u root << EOF
+mysql << EOF
 USE portal;
 INSERT INTO users (username, password_hash, role, status) VALUES ('admin', '$ADMIN_HASH', 'admin', 'active');
 EOF
@@ -278,4 +285,4 @@ ufw allow 67/udp # DHCP NO IMPORTA PERO POR SI ACASO
 ufw allow 68/udp # DHCP TAMBIÉN
 ufw allow 69/udp # TFTP
 ufw allow 10809
-ufw enable
+ufw --force enable
