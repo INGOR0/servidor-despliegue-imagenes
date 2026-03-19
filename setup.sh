@@ -41,6 +41,7 @@ cp "$SCRIPT_DIR/iventoy-files/start_iventoy.sh" /usr/local/bin/start_iventoy.sh
 chmod +x /usr/local/bin/start_iventoy.sh
 cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.service
 
+cp $SCRIPT_DIR/iventoy-files/fake.iso /opt/iventoy/iso
 cd /opt/iventoy
 bash iventoy.sh start
 echo ""
