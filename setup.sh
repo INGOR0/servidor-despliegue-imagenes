@@ -264,4 +264,5 @@ ufw allow from 127.0.0.1 to any port 3000
 ufw deny 10000
 ufw deny 26000
 ufw allow samba
+ufw allow 16000 # IMPORTANTE MUCHISIMO IMPORTANTE
 ufw enable
