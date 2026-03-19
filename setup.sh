@@ -40,8 +40,6 @@ rm iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
 cp "$SCRIPT_DIR/iventoy-files/start_iventoy.sh" /usr/local/bin/start_iventoy.sh
 chmod +x /usr/local/bin/start_iventoy.sh
 cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.service
-mkdir -p /tmp/empty-iso
-xorriso -as mkisofs -o /opt/iventoy/iso/fake.iso /tmp/empty-iso
 
 cd /opt/iventoy
 bash iventoy.sh start
