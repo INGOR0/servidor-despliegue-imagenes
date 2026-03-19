@@ -158,7 +158,7 @@ apt install xorriso -y
 xorriso -as mkisofs \
     -r -J -joliet-long \
     -l -cache-inodes \
-    -isohybrid-mbr "$WORK_DIR/isolinux/isohdpfx.bin" \
+    -isohybrid-mbr "$WORK_DIR/isolinux/isolinux.bin" \
     -partition_offset 16 \
     -A "Clonezilla Live" \
     -b isolinux/isolinux.bin \
