@@ -269,4 +269,5 @@ ufw allow 16000 # IMPORTANTE MUCHISIMO IMPORTANTE
 ufw allow 67/udp # DHCP NO IMPORTA PERO POR SI ACASO
 ufw allow 68/udp # DHCP TAMBIÉN
 ufw allow 69/udp # TFTP
+ufw allow 10809
 ufw enable
