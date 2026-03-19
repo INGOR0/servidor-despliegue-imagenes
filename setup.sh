@@ -158,11 +158,11 @@ apt install xorriso -y
 xorriso -as mkisofs \
     -r -J -joliet-long \
     -l -cache-inodes \
-    -isohybrid-mbr "$WORK_DIR/syslinux/isolinux.bin" \
+    -isohybrid-mbr "$WORK_DIR/isolinux/isohdpfx.bin" \
     -partition_offset 16 \
     -A "Clonezilla Live" \
-    -b syslinux/isolinux.bin \
-    -c syslinux/boot.cat \
+    -b isolinux/isolinux.bin \
+    -c isolinux/boot.cat \
     -no-emul-boot -boot-load-size 4 -boot-info-table \
     -eltorito-alt-boot \
     -e boot/grub/efi.img \
@@ -175,7 +175,7 @@ rm -rf "$WORK_DIR"
 rm -rf /tmp/clonezilla-original
 
 echo "ISO de Clonezilla preparada con éxito."
-
+rm /opt/iventoy/iso/fake.iso
 
 
 # ------------- Instalar Webmin ------------- #
