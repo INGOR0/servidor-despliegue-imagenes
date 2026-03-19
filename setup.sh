@@ -158,7 +158,7 @@ xorriso -as mkisofs \
     -isohybrid-gpt-basdat \
     -o "/opt/iventoy/iso/clonezilla-custom.iso" \
     "$WORK_DIR"
-    
+
 rm -rf "$WORK_DIR"
 rm -rf /tmp/clonezilla-original
 
@@ -168,11 +168,14 @@ echo "ISO de Clonezilla preparada con éxito."
 
 # ------------- Instalar Webmin ------------- #
 
+mkdir /tmp/webmin
+cd /tmp/webmin
 apt install curl -y
 curl -o webmin-setup-repo.sh https://raw.githubusercontent.com/webmin/webmin/master/webmin-setup-repo.sh
 echo "y" | sh webmin-setup-repo.sh
 apt-get install webmin --install-recommends -y
-rm -f webmin-setup-repo.sh
+cd /root
+rm -rf /tmp/webmin
 
 
 
