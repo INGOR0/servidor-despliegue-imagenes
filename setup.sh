@@ -48,7 +48,8 @@ echo ""
 echo "Abre http://<IP>:26000 en tu navegador, activa el servidor PXE y pulsa ENTER para continuar..."
 read -p ""
 
-bash /opt/iventoy/iventoy.sh stop
+cd /opt/iventoy
+bash iventoy.sh stop
 systemctl daemon-reload
 systemctl enable iventoy
 systemctl restart iventoy
