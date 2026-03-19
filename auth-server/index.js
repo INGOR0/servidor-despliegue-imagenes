@@ -47,15 +47,17 @@ const loginLimiter = rateLimit({
     windowMs: 3 * 60 * 1000,
     max: 3,
     handler: (req, res) => {
-        res.redirect('/login?error=ratelimit&redirect=' + encodeURIComponent(req.body.redirect || '/'))
+        const retryAfter = Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000)
+        res.redirect('/login?error=ratelimit&retry=' + retryAfter + '&redirect=' + encodeURIComponent(req.body.redirect || '/'))
     }
 })
 
 app.get('/login', (req, res) => {
     if (req.session && req.session.userId) return res.redirect('/')
     const redirect = req.query.redirect || '/'
+    const retryAfter = req.query.retry || 0
     const error = req.query.error === 'ratelimit'
-    ? 'Demasiados intentos, espera 3 minutos'
+    ? `Demasiados intentos. <span id="countdown" data-seconds="${retryAfter}"></span>`
     : req.query.error
         ? 'Usuario o contraseña incorrectos'
         : ''

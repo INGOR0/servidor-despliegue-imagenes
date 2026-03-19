@@ -55,7 +55,8 @@ CLONEZILLA_ISO="clonezilla-live-$CLONEZILLA_VERSION-amd64.iso"
 CLONEZILLA_URL="https://downloads.sourceforge.net/project/clonezilla/clonezilla_live_stable/$CLONEZILLA_VERSION/$CLONEZILLA_ISO"
 CLONEZILLA_SHA256="ac4f88c8795a917e3d3fc1a3e52d095f35fe531d459cf853cd3e2c7731043fec"
 
-cd /opt/iventoy/iso
+mkdir -p /tmp/clonezilla-original
+cd /tmp/clonezilla-original
 wget "$CLONEZILLA_URL" -O "$CLONEZILLA_ISO"
 
 echo "$CLONEZILLA_SHA256  $CLONEZILLA_ISO" | sha256sum -c --strict
@@ -120,7 +121,7 @@ echo "Preparando ISO de Clonezilla..."
 WORK_DIR="/tmp/clonezilla-copiada"
 ORIGINAL_CLONEZILLA_DIR="/mnt/clonezilla-original"
 
-cd /opt/iventoy/iso # Por si acaso
+cd /tmp/clonezilla-original # Por si acaso
 mkdir -p "$WORK_DIR"
 mkdir -p "$ORIGINAL_CLONEZILLA_DIR"
 mount -o loop "$CLONEZILLA_ISO" "$ORIGINAL_CLONEZILLA_DIR"
@@ -158,7 +159,7 @@ xorriso -as mkisofs \
     -e boot/grub/efi.img \
     -no-emul-boot \
     -isohybrid-gpt-basdat \
-    -o "$CLONEZILLA_ISO" \
+    -o "/opt/iventoy/clonezilla-custom.iso" \
     "$WORK_DIR"
 
 rm -rf "$WORK_DIR"
@@ -193,6 +194,7 @@ sed "s|__DOMAIN__|$DOMAIN|g" \
     
 
 cp -r "$SCRIPT_DIR/portal" /var/www/html
+find /var/www/html/portal -type f -name "*.html" -exec sed -i "s|__DOMAIN__|$DOMAIN|g" {} \;
 [ -L /etc/nginx/sites-enabled/portal.conf ] || ln -s /etc/nginx/sites-available/portal.conf /etc/nginx/sites-enabled
 
 systemctl enable nginx
@@ -260,4 +262,5 @@ ufw allow 443
 ufw allow from 127.0.0.1 to any port 3000
 ufw deny 10000
 ufw deny 26000
+ufw allow samba
 ufw enable
