@@ -1,3 +1,3 @@
 #!/bin/bash
 cd /opt/iventoy
-bash iventoy.sh start -R
+bash iventoy.sh -R start
