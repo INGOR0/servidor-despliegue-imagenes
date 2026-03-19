@@ -46,13 +46,19 @@ app.get('/auth/check', (req, res) => {
 const loginLimiter = rateLimit({
     windowMs: 3 * 60 * 1000,
     max: 3,
-    message: 'Demasiados intentos, espera 3 minutos'
+    handler: (req, res) => {
+        res.redirect('/login?error=ratelimit&redirect=' + encodeURIComponent(req.body.redirect || '/'))
+    }
 })
 
 app.get('/login', (req, res) => {
     if (req.session && req.session.userId) return res.redirect('/')
     const redirect = req.query.redirect || '/'
-    const error = req.query.error ? 'Usuario o contraseña incorrectos' : ''
+    const error = req.query.error === 'ratelimit'
+    ? 'Demasiados intentos, espera 3 minutos'
+    : req.query.error
+        ? 'Usuario o contraseña incorrectos'
+        : ''
     let html = fs.readFileSync(path.join('/var/www/html/portal', 'login.html'), 'utf8')
     html = html.replace('</form>', `<input type="hidden" name="redirect" value="${redirect}"></form>`)
     html = html.replace('<p id="error"></p>', `<p id="error">${error}</p>`)

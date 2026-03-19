@@ -7,7 +7,7 @@
 ##    TODO CAMBIO AL SCRIPT ESTÁ PERMITIDO   ##
 ###############################################
 
-SCRIPT_DIR="$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ------------- Instalar iVentoy ------------- #
 
