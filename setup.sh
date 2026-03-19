@@ -29,11 +29,8 @@ IVENTOY_VERSION="1.0.21"
 cd /opt
 rm -rf iventoy
 wget https://github.com/ventoy/PXE/releases/download/v${IVENTOY_VERSION}/iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
-
 tar -xzf iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
-
 mv iventoy-${IVENTOY_VERSION} iventoy
-
 rm iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
 
 
@@ -43,6 +40,8 @@ rm iventoy-${IVENTOY_VERSION}-linux-free.tar.gz
 cp "$SCRIPT_DIR/iventoy-files/start_iventoy.sh" /usr/local/bin/start_iventoy.sh
 chmod +x /usr/local/bin/start_iventoy.sh
 cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.service
+mkdir -p /tmp/empty-iso
+xorriso -as mkisofs -o /opt/iventoy/iso/fake.iso /tmp/empty-iso
 
 cd /opt/iventoy
 bash iventoy.sh start
@@ -56,8 +55,6 @@ systemctl enable iventoy
 systemctl restart iventoy
 
 echo "iVentoy instalado y corriendo con éxito."
-
-
 
 
 
