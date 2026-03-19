@@ -59,10 +59,6 @@ cd /opt/iventoy/iso
 wget "$CLONEZILLA_URL" -O "$CLONEZILLA_ISO"
 
 echo "$CLONEZILLA_SHA256  $CLONEZILLA_ISO" | sha256sum -c --strict
-if [ $? -ne 0 ]; then
-    echo "ERROR: El hash de Clonezilla no coincide. Descarga corrupta o modificada. Abortando..."
-    exit 1
-fi
 
 echo "Clonezilla descargado y verificado con éxito."
 
@@ -78,7 +74,7 @@ SAMBA_SHARE_RECURSOS_COMPARTIDOS="Recursos_Compartidos"
 apt install samba -y
 
 mkdir -p "$SAMBA_DIR"
-ln -s "/opt/iventoy/iso" "$SAMBA_DIR/$SAMBA_SHARE_ISO"
+[ -L "$SAMBA_DIR/$SAMBA_SHARE_ISO" ] || ln -s "/opt/iventoy/iso" "$SAMBA_DIR/$SAMBA_SHARE_ISO"
 mkdir -p "$SAMBA_DIR/$SAMBA_SHARE_CLONEZILLA"
 mkdir -p "$SAMBA_DIR/$SAMBA_SHARE_RECURSOS_COMPARTIDOS"
 
@@ -86,10 +82,10 @@ read -p "Usuario de Samba con permisos de escritura: " SAMBA_USER
 read -sp "Contraseña de dicho usuario: " SAMBA_PASS
 echo ""
 
-useradd -M -s /usr/sbin/nologin "$SAMBA_USER"
+id "$SAMBA_USER" &>/dev/null || useradd -M -s /usr/sbin/nologin "$SAMBA_USER"
 echo -e "$SAMBA_PASS\n$SAMBA_PASS" | smbpasswd -a -s "$SAMBA_USER"
 
-useradd -M -s /usr/sbin/nologin anonimo
+id "anonimo" &>/dev/null || useradd -M -s /usr/sbin/nologin anonimo
 echo -e "anonimo\nanonimo" | smbpasswd -a -s "anonimo"
 
 sed -e "s|__SAMBA_DIR__|$SAMBA_DIR|g" \
@@ -99,7 +95,7 @@ sed -e "s|__SAMBA_DIR__|$SAMBA_DIR|g" \
     -e "s|__SAMBA_USER__|$SAMBA_USER|g" \
     "$SCRIPT_DIR/samba-files/samba_shares.conf" > /etc/samba/samba_shares.conf
 
-echo "include = /etc/samba/samba_shares.conf" >> /etc/samba/smb.conf
+grep -q "samba_shares.conf" /etc/samba/smb.conf || echo "include = /etc/samba/samba_shares.conf" >> /etc/samba/smb.conf
 systemctl restart smbd
 
 
@@ -122,12 +118,14 @@ echo "Preparando ISO de Clonezilla..."
 # Montar la ISO y copiarla
 
 WORK_DIR="/tmp/clonezilla-copiada"
+ORIGINAL_CLONEZILLA_DIR="/mnt/clonezilla-original"
 
 cd /opt/iventoy/iso # Por si acaso
 mkdir -p "$WORK_DIR"
-mount -o loop "$CLONEZILLA_ISO" /mnt
-cp -r /mnt/. "$WORK_DIR"
-umount /mnt
+mkdir -p "$ORIGINAL_CLONEZILLA_DIR"
+mount -o loop "$CLONEZILLA_ISO" "$ORIGINAL_CLONEZILLA_DIR"
+cp -r "$ORIGINAL_CLONEZILLA_DIR/." "$WORK_DIR"
+umount "$ORIGINAL_CLONEZILLA_DIR"
 chmod -R u+w "$WORK_DIR"
 
 
@@ -195,7 +193,7 @@ sed "s|__DOMAIN__|$DOMAIN|g" \
     
 
 cp -r "$SCRIPT_DIR/portal" /var/www/html
-ln -s /etc/nginx/sites-available/portal.conf /etc/nginx/sites-enabled
+[ -L /etc/nginx/sites-enabled/portal.conf ] || ln -s /etc/nginx/sites-available/portal.conf /etc/nginx/sites-enabled
 
 systemctl enable nginx
 systemctl reload nginx
@@ -223,7 +221,7 @@ CREATE TABLE users (
 );
 EOF
 
-mkdir /opt/auth-server
+mkdir -p /opt/auth-server
 cp "$SCRIPT_DIR/auth-server/package.json" /opt/auth-server
 cd /opt/auth-server
 npm install
@@ -231,7 +229,7 @@ npm install
 read -sp "Contraseña para el usuario admin: " ADMIN_PASS
 echo ""
 
-ADMIN_HASH=$(node -e "const bcrypt = require('bcrypt'); bcrypt.hash('$ADMIN_PASS', 10).then(h => console.log(h))")
+ADMIN_HASH=$(ADMIN_PASS="$ADMIN_PASS" node -e "const bcrypt = require('bcrypt'); bcrypt.hash(process.env.ADMIN_PASS, 10).then(h => console.log(h))")
 
 mysql -u root << EOF
 USE portal;
