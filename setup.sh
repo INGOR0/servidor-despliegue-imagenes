@@ -43,7 +43,7 @@ cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.servi
 
 cp $SCRIPT_DIR/iventoy-files/fake.iso /opt/iventoy/iso
 cd /opt/iventoy
-bash iventoy.sh start
+bash iventoy.sh start -R
 echo ""
 echo "Abre http://<IP>:26000 en tu navegador, activa el servidor PXE y pulsa ENTER para continuar..."
 read -p ""
