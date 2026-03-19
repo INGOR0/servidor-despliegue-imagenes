@@ -94,9 +94,8 @@ sed -e "s|__SAMBA_DIR__|$SAMBA_DIR|g" \
     -e "s|__SAMBA_SHARE_CLONEZILLA__|$SAMBA_SHARE_CLONEZILLA|g" \
     -e "s|__SAMBA_SHARE_RECURSOS_COMPARTIDOS__|$SAMBA_SHARE_RECURSOS_COMPARTIDOS|g" \
     -e "s|__SAMBA_USER__|$SAMBA_USER|g" \
-    "$SCRIPT_DIR/samba-files/samba_shares.conf" > /etc/samba/samba_shares.conf
+    "$SCRIPT_DIR/samba-files/smb.conf" > /etc/samba/smb.conf
 
-grep -q "samba_shares.conf" /etc/samba/smb.conf || echo "include = /etc/samba/samba_shares.conf" >> /etc/samba/smb.conf
 systemctl restart smbd
 
 
