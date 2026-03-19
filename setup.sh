@@ -68,8 +68,8 @@ echo "Clonezilla descargado y verificado con éxito."
 # ------------- Instalar Samba------------- #
 
 SAMBA_DIR="/srv/samba"
-SAMBA_SHARE_ISO="iso"
-SAMBA_SHARE_CLONEZILLA="clonezilla"
+SAMBA_SHARE_ISO="ISOs"
+SAMBA_SHARE_CLONEZILLA="Clonezilla"
 SAMBA_SHARE_RECURSOS_COMPARTIDOS="Recursos_Compartidos"
 
 apt install samba -y
@@ -143,24 +143,22 @@ sed -e "s/__SERVER_IP__/$SERVER_IP/g" \
 
 apt install xorriso -y
 
-if [ -d "$WORK_DIR/isolinux" ]; then
-    BIOS_OPTS="-b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table"
-else
-    BIOS_OPTS=""
-fi
-
 xorriso -as mkisofs \
     -r -J -joliet-long \
+    -l -cache-inodes \
+    -isohybrid-mbr "$WORK_DIR/syslinux/isolinux.bin" \
     -partition_offset 16 \
-    -A "Clonezilla" \
-    $BIOS_OPTS \
+    -A "Clonezilla Live" \
+    -b syslinux/isolinux.bin \
+    -c syslinux/boot.cat \
+    -no-emul-boot -boot-load-size 4 -boot-info-table \
     -eltorito-alt-boot \
     -e boot/grub/efi.img \
     -no-emul-boot \
     -isohybrid-gpt-basdat \
     -o "/opt/iventoy/iso/clonezilla-custom.iso" \
     "$WORK_DIR"
-
+    
 rm -rf "$WORK_DIR"
 rm -rf /tmp/clonezilla-original
 
