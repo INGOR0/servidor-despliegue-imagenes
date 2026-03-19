@@ -7,6 +7,13 @@
 ##    TODO CAMBIO AL SCRIPT ESTÁ PERMITIDO   ##
 ###############################################
 
+set -e
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Este script debe ejecutarse como root."
+    exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ------------- Instalar iVentoy ------------- #
@@ -99,9 +106,9 @@ systemctl restart smbd
 
 # wsdd para descubrimiento en Windows
 
-apt install wsdd -y
-systemctl enable wsdd
-systemctl start wsdd
+apt install wsdd2 -y
+systemctl enable wsdd2
+systemctl start wsdd2
 
 
 
@@ -132,19 +139,23 @@ sed -e "s/__SERVER_IP__/$SERVER_IP/g" \
     -e "s/__SAMBA_PASS__/$SAMBA_PASS/g" \
     "$SCRIPT_DIR/clonezilla-files/menu.cfg" > "$WORK_DIR/syslinux/syslinux.cfg"
 
-cp "$WORK_DIR/syslinux/syslinux.cfg" "$WORK_DIR/isolinux/isolinux.cfg"
-
 
 
 # Reconstruir ISO
+
+apt install xorriso -y
+
+if [ -d "$WORK_DIR/isolinux" ]; then
+    BIOS_OPTS="-b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table"
+else
+    BIOS_OPTS=""
+fi
 
 xorriso -as mkisofs \
     -r -J -joliet-long \
     -partition_offset 16 \
     -A "Clonezilla" \
-    -b isolinux/isolinux.bin \
-    -c isolinux/boot.cat \
-    -no-emul-boot -boot-load-size 4 -boot-info-table \
+    $BIOS_OPTS \
     -eltorito-alt-boot \
     -e boot/grub/efi.img \
     -no-emul-boot \
@@ -160,6 +171,7 @@ echo "ISO de Clonezilla preparada con éxito."
 
 # ------------- Instalar Webmin ------------- #
 
+apt install curl -y
 curl -o webmin-setup-repo.sh https://raw.githubusercontent.com/webmin/webmin/master/webmin-setup-repo.sh
 echo "y" | sh webmin-setup-repo.sh
 apt-get install webmin --install-recommends -y
@@ -190,7 +202,7 @@ systemctl reload nginx
 
 # ------------- Instalar sistema de login ------------- #
 
-apt install nodejs mariadb-server -y
+apt install nodejs mariadb-server npm -y
 
 read -p "Usuario de MariaDB para el portal: " DB_USER
 read -sp "Contraseña del usuario para el portal: " DB_PASS
