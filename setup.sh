@@ -38,11 +38,19 @@ cp "$SCRIPT_DIR/iventoy-files/start_iventoy.sh" /usr/local/bin/start_iventoy.sh
 chmod +x /usr/local/bin/start_iventoy.sh
 cp "$SCRIPT_DIR/iventoy-files/iventoy.service" /etc/systemd/system/iventoy.service
 
+bash /opt/iventoy/iventoy.sh start
+echo ""
+echo "Abre http://<IP>:26000 en tu navegador, activa el servidor PXE y pulsa ENTER para continuar..."
+read -p ""
+
+bash /opt/iventoy/iventoy.sh stop
 systemctl daemon-reload
 systemctl enable iventoy
 systemctl restart iventoy
 
 echo "iVentoy instalado y corriendo con éxito."
+
+
 
 
 
