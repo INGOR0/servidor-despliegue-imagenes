@@ -171,10 +171,6 @@ xorriso -as mkisofs \
     -o "/opt/iventoy/iso/clonezilla-custom.iso" \
     "$WORK_DIR"
 
-echo "=== DEBUG syslinux.cfg ===" 
-cat "$WORK_DIR/syslinux/syslinux.cfg"
-echo "=========================="
-
 rm -rf "$WORK_DIR"
 rm -rf /tmp/clonezilla-original
 
