@@ -149,7 +149,7 @@ sed -e "s/__SERVER_IP__/$SERVER_IP/g" \
     -e "s/__SAMBA_PASS__/$SAMBA_PASS/g" \
     "$SCRIPT_DIR/clonezilla-files/menu.cfg" > "$WORK_DIR/syslinux/syslinux.cfg"
 
-
+cp "$WORK_DIR/syslinux/syslinux.cfg" "$WORK_DIR/syslinux/isolinux.cfg"
 
 # Reconstruir ISO
 
@@ -157,12 +157,12 @@ apt install xorriso -y
 
 xorriso -as mkisofs \
     -r -J -joliet-long \
-    -l -cache-inodes \
-    -isohybrid-mbr "$WORK_DIR/isolinux/isolinux.bin" \
+    -l \
+    -isohybrid-mbr "$WORK_DIR/syslinux/isolinux.bin" \
     -partition_offset 16 \
     -A "Clonezilla Live" \
-    -b isolinux/isolinux.bin \
-    -c isolinux/boot.cat \
+    -b syslinux/isolinux.bin \
+    -c syslinux/boot.cat \
     -no-emul-boot -boot-load-size 4 -boot-info-table \
     -eltorito-alt-boot \
     -e boot/grub/efi.img \
