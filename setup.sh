@@ -79,6 +79,10 @@ echo "Clonezilla descargado y verificado con éxito."
 
 # ------------- Instalar Samba------------- #
 
+read -p "Usuario de Samba con permisos de escritura: " SAMBA_USER
+read -sp "Contraseña de dicho usuario: " SAMBA_PASS
+echo ""
+
 SAMBA_DIR="/srv/samba"
 SAMBA_SHARE_ISO="ISOs"
 SAMBA_SHARE_CLONEZILLA="Clonezilla"
@@ -91,12 +95,11 @@ mkdir -p "$SAMBA_DIR"
 mkdir -p "$SAMBA_DIR/$SAMBA_SHARE_CLONEZILLA"
 mkdir -p "$SAMBA_DIR/$SAMBA_SHARE_RECURSOS_COMPARTIDOS"
 
-read -p "Usuario de Samba con permisos de escritura: " SAMBA_USER
-read -sp "Contraseña de dicho usuario: " SAMBA_PASS
-echo ""
-
 id "$SAMBA_USER" &>/dev/null || useradd -M -s /usr/sbin/nologin "$SAMBA_USER"
 echo -e "$SAMBA_PASS\n$SAMBA_PASS" | smbpasswd -a -s "$SAMBA_USER"
+
+chown -R "$SAMBA_USER:$SAMBA_USER" "$SAMBA_DIR/$SAMBA_SHARE_CLONEZILLA"
+chown -R "$SAMBA_USER:$SAMBA_USER" "$SAMBA_DIR/$SAMBA_SHARE_RECURSOS_COMPARTIDOS"
 
 id "anonimo" &>/dev/null || useradd -M -s /usr/sbin/nologin anonimo
 echo -e "anonimo\nanonimo" | smbpasswd -a -s "anonimo"
