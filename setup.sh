@@ -221,9 +221,8 @@ systemctl reload nginx
 
 apt install nodejs mariadb-server npm -y
 
-read -p "Usuario de MariaDB para el portal: " DB_USER
-read -sp "Contraseña del usuario para el portal: " DB_PASS
-echo ""
+DB_USER="portal_user"
+DB_PASS=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 
 mysql -u root << EOF
 CREATE DATABASE portal;
