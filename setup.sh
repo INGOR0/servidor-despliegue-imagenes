@@ -121,6 +121,12 @@ apt install wsdd2 -y
 systemctl enable wsdd2
 systemctl start wsdd2
 
+# avahi para descubrimiento en Linux y Mac
+
+apt install avahi-daemon
+systemctl enable avahi-daemon
+systemctl start avahi-daemon
+
 
 
 # ------------- Preparar Clonezilla ------------- #
@@ -283,5 +289,7 @@ ufw allow 16000 # IMPORTANTE MUCHISIMO IMPORTANTE
 ufw allow 67/udp # DHCP NO IMPORTA PERO POR SI ACASO
 ufw allow 68/udp # DHCP TAMBIÉN
 ufw allow 69/udp # TFTP
-ufw allow 10809
+ufw allow 3702/udp # WSD for Windows
+ufw allow 5353/udp # mDNS for Avahi (Linux/Mac)
+ufw allow 10809 #iVentoy's NBD port 
 ufw --force enable
