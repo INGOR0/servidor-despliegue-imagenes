@@ -45,7 +45,7 @@ app.get('/auth/check', (req, res) => {
 
 const loginLimiter = rateLimit({
     windowMs: 3 * 60 * 1000,
-    max: 3,
+    max: 2,
     handler: (req, res) => {
         const retryAfter = Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000)
         res.redirect('/login?error=ratelimit&retry=' + retryAfter + '&redirect=' + encodeURIComponent(req.body.redirect || '/'))
