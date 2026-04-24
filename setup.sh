@@ -253,8 +253,7 @@ npm install
 read -sp "Contraseña para el usuario admin: " ADMIN_PASS
 echo ""
 
-ADMIN_HASH=$(ADMIN_PASS="$ADMIN_PASS" node -e "const bcrypt = require('bcrypt'); bcrypt.hash(process.env.ADMIN_PASS, 10).then(h => console.log(h))")
-
+ADMIN_HASH=$(ADMIN_PASS="$ADMIN_PASS" node -e "const bcrypt = require('bcrypt'); console.log(bcrypt.hashSync(process.env.ADMIN_PASS, 10))")
 mysql << EOF
 USE portal;
 INSERT INTO users (username, password_hash, role, status) VALUES ('admin', '$ADMIN_HASH', 'admin', 'active');
