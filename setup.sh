@@ -123,7 +123,7 @@ systemctl start wsdd2
 
 # avahi para descubrimiento en Linux y Mac
 
-apt install avahi-daemon
+apt install avahi-daemon -y
 systemctl enable avahi-daemon
 systemctl start avahi-daemon
 
