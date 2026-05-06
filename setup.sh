@@ -296,6 +296,7 @@ ufw allow 16000 # IMPORTANTE MUCHISIMO IMPORTANTE
 ufw allow 67/udp # DHCP NO IMPORTA PERO POR SI ACASO
 ufw allow 68/udp # DHCP TAMBIÉN
 ufw allow 69/udp # TFTP
+ufw allow 5357/tcp
 ufw allow 3702/udp # WSD for Windows
 ufw allow 5353/udp # mDNS for Avahi (Linux/Mac)
 ufw allow 10809 #iVentoy's NBD port 
