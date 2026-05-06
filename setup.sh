@@ -160,6 +160,13 @@ sed -e "s/__SERVER_IP__/$SERVER_IP/g" \
 
 cp "$WORK_DIR/syslinux/syslinux.cfg" "$WORK_DIR/syslinux/isolinux.cfg"
 
+sed -e "s/__SERVER_IP__/$SERVER_IP/g" \
+    -e "s/__SAMBA_USER__/$SAMBA_USER/g" \
+    -e "s/__SAMBA_PASS__/$SAMBA_PASS/g" \
+    "$SCRIPT_DIR/clonezilla-files/grub.cfg" > "$WORK_DIR/EFI/boot/grub.cfg"
+
+    
+
 # Reconstruir ISO
 
 apt install xorriso -y
